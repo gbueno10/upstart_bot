@@ -1,36 +1,60 @@
-const { addUser, updateUserDetails, getUserByDiscordUID } =  require('../utils/supabaseClient');
+// userListener.js
+
+const {
+    addUserWithRoles,
+    updateUserRoles,
+    getUserByDiscordUID,
+    updateUserDetails,   // Precisará ser definida em supabaseClient.js
+    addUser              // Precisará ser definida em supabaseClient.js
+} = require('../utils/supabaseClient');
 
 module.exports = (client) => {
-    client.on('userUpdate', async (oldUser, newUser) => {
-        console.log("userUpdateListener:Evento UserUpdate foi disparado")
-        // Verificar se o nome de usuário ou o avatar foi alterado
-        if (oldUser.username !== newUser.username || 
-            oldUser.avatar !== newUser.avatar ||
-            oldUser.discriminator !== newUser.discriminator ||
-            oldUser.tag !== newUser.tag) {
-            try {
-                // Obtenha as informações atualizadas do usuário
-                const userData = {
-                    username: newUser.username,
-                    avatar: newUser.displayAvatarURL({ format: 'png', dynamic: true }),
-                    tag: newUser.tag,
-                    bio: newUser.bio // Note que esta é uma propriedade fictícia, pois Discord.js não fornece uma bio diretamente.
-                };
-    
-                // Tente buscar o usuário pelo UID no Supabase
-                const userInDB = await getUserByDiscordUID(newUser.id);
-                
-                if (userInDB) {
-                    // Atualize os detalhes do usuário no Supabase
-                    await updateUserDetails(newUser.id, userData);
-                } else {
-                    // Se o usuário não estiver no banco de dados, adicione-o
-                    await addUser(newUser.id, userData);
-                }
-            } catch (error) {
-                console.error("Erro ao atualizar o usuário no Supabase:", error);
-            }
+    client.on('guildMemberUpdate', async (oldMember, newMember) => {
+        console.log("UserListener: Evento guildMemberUpdate foi acionado.");
+        if (newMember.user.bot) {
+            console.log('É um bot. Ignorando...');
+            return;
+        }
+        const discordId = newMember.id;
+
+        const oldRoles = oldMember.roles.cache.map(role => role.name);
+        const newRoles = newMember.roles.cache.map(role => role.name);
+
+        let hasChanges = false;
+        
+        if (!arraysEqual(oldRoles, newRoles)) {
+            console.log("Roles mudaram");
+            hasChanges = true;
+        }
+
+        if (oldMember.nickname !== newMember.nickname) {
+            console.log("Nickname mudou");
+            hasChanges = true;
+        }
+
+        if (oldMember.user.avatarURL() !== newMember.user.avatarURL()) {
+            console.log("Avatar mudou");
+            hasChanges = true;
+        }
+
+        if (!hasChanges) {
+            console.log("Nenhuma informação relevante foi alterada. Saindo...");
+            return;
+        }
+
+        // Tente buscar o usuário pelo UID no Supabase
+        const userInDB = await getUserByDiscordUID(discordId);
+        
+        if (userInDB) {
+            // Aqui, você pode atualizar todas as informações necessárias no Supabase
+            await updateUserDetails(discordId, newMember); // Essa função precisa ser implementada!
+        } else {
+            // Se o usuário não existir no banco de dados, adicione-o com suas informações
+            await addUser(discordId, newMember); // Essa função precisa ser implementada!
         }
     });
-};
 
+    function arraysEqual(a, b) {
+        return a.length === b.length && a.every((val, index) => val === b[index]);
+    }
+};

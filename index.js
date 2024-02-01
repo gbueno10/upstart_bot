@@ -27,9 +27,14 @@ const roleManager = require('./src/events/roleManager');
 const ping = require('./src/commands/ping');
 const experticeManager = require('./src/events/experticeManager');
 const userRolesModule = require('./src/utils/userRoles')(client);
+const interactionListener = require("./src/events/interactionListener");
+interactionListener(client);
 
-const roleListener = require('./src/events/roleListener');
-roleListener(client);
+const registerCommands = require('./src/commands/registerCommands');
+registerCommands();
+
+//const roleListener = require('./src/events/roleListener');
+//roleListener(client);
 
 
 const userUpdateListener = require('./src/events/userUpdateListener');
@@ -38,9 +43,13 @@ userUpdateListener(client);
 roleManager(client);
 ping(client);
 
-experticeManager(client);
-client.login(process.env.DISCORD_TOKEN);
 
+experticeManager(client);
+
+
+
+
+client.login(process.env.DISCORD_TOKEN);
 client.once('ready', () => {
     console.log('Bot está online!');
 })
