@@ -1,3 +1,5 @@
+// registerCommands.js
+
 const { REST, Routes } = require('discord.js');
 require('dotenv').config();
 const clientId = process.env.DISCORD_CLIENT_ID;
@@ -13,6 +15,10 @@ const commandsGeneral = [
             description: 'Digite sua nova bio',
             required: true,
         }],
+    },
+    {
+        name: 'update-database',
+        description: 'Verifica e atualiza o banco de dados',
     },
     // Adicione mais comandos conforme necessário
 ];

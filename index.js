@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
@@ -16,7 +15,6 @@ const client = new Client({
     ],
 });
 
-
 app.use(bodyParser.json());
 
 app.listen(4000, () => {
@@ -28,28 +26,23 @@ const ping = require('./src/commands/ping');
 const experticeManager = require('./src/events/experticeManager');
 const userRolesModule = require('./src/utils/userRoles')(client);
 const interactionListener = require("./src/events/interactionListener");
+const checkAndUpdateDatabase  = require("./src/utils/checkAndUpdateDatabase");
+
 interactionListener(client);
 
 const registerCommands = require('./src/commands/registerCommands');
 registerCommands();
-
-//const roleListener = require('./src/events/roleListener');
-//roleListener(client);
-
 
 const userUpdateListener = require('./src/events/userUpdateListener');
 userUpdateListener(client);
 
 roleManager(client);
 ping(client);
-
-
 experticeManager(client);
-
-
-
 
 client.login(process.env.DISCORD_TOKEN);
 client.once('ready', () => {
     console.log('Bot está online!');
-})
+});
+
+module.exports = checkAndUpdateDatabase;

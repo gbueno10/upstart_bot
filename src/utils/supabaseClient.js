@@ -8,30 +8,60 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 async function getUserByDiscordUID(discord_uid) {
+    console.log(`Buscando usuário no Supabase com o Discord UID: ${discord_uid}`);
+
     const { data, error } = await supabase
         .from('discord_users')
         .select('*')
         .eq('discord_uid', discord_uid);
 
     if (error) {
-        // Caso o código de erro seja "PGRST116", trate como usuário não encontrado
-        if (error.code === 'PGRST116') {
-            console.warn('User not found:', discord_uid);
-            return null;
-        } else {
-            // Caso contrário, é um erro genuíno e deve ser tratado como tal.
-            console.error('Error fetching user:', error);
-            throw error;
-        }
-    }
-
-    // Se data for uma lista vazia, significa que o usuário não foi encontrado.
-    if (data.length === 0) {
+        console.error('Erro ao buscar usuário:', error);
         return null;
     }
 
-    // Retorne o primeiro item da lista, uma vez que discord_uid deve ser único e só deveria haver um resultado.
+    if (data.length === 0) {
+        console.warn('Usuário não encontrado:', discord_uid);
+        return null;
+    }
+
+    console.log('Usuário encontrado:', data[0]);
     return data[0];
+}
+
+async function addUserWithRoles(discord_uid, roles) {
+    console.log(`Adicionando usuário ao Supabase com o Discord UID: ${discord_uid}`);
+
+    const { data, error } = await supabase
+        .from('discord_users')
+        .insert([
+            { discord_uid: discord_uid, roles: roles }
+        ]);
+
+    if (error) {
+        console.error('Erro ao adicionar usuário:', error);
+        return null;
+    }
+
+    console.log('Usuário adicionado:', data[0]);
+    return data[0];
+}
+
+async function updateUserRoles(discordId, roles) {
+    console.log(`Atualizando roles do usuário no Supabase com o Discord UID: ${discordId}`);
+
+    const { data, error } = await supabase
+        .from('discord_users')
+        .update({ roles: roles })
+        .eq('discord_uid', discordId);
+
+    if (error) {
+        console.error('Erro ao atualizar roles do usuário:', error);
+        return null;
+    }
+
+    console.log('Roles do usuário atualizadas:', data);
+    return data;
 }
 
 

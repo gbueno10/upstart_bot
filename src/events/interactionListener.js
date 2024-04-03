@@ -1,4 +1,5 @@
 const { updateUserBio } = require('../utils/supabaseClient');
+const checkAndUpdateDatabase = require('../utils/checkAndUpdateDatabase');
 
 module.exports = (client) => {
     console.log("/events/interactionListener.js ativo");
@@ -17,6 +18,12 @@ module.exports = (client) => {
             } else {
                 await interaction.reply('Erro ao atualizar a bio.');
             }
+        } else if (commandName === 'update-database') {
+            console.log('Comando database-update acionado');
+            
+            // Chamando a função para verificar e atualizar o banco de dados
+            await checkAndUpdateDatabase(client);
+            await interaction.reply('Verificação e atualização do banco de dados concluídas.');
         }
     });
 };
